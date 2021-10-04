@@ -69,7 +69,7 @@ class _MyAppState extends State<MyApp> {
               onPressed: () async {
                 await telephony.openDialer("123413453");
               },
-              child:const Text('Open Dialer'))
+              child: const Text('Open Dialer'))
         ],
       ),
     ));
