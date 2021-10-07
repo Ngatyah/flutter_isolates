@@ -25,7 +25,7 @@ class _HomePageState extends State<HomePage> {
               setState(() {
                 isOn = value;
                 if (isOn) {
-                  print("Happy Day!!");
+                  debugPrint("Happy Day!!");
                 }
               });
             },
