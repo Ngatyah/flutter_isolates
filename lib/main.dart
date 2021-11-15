@@ -1,23 +1,28 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:telephony/telephony.dart';
 import 'package:http/http.dart' as http;
 
 onBackgroundMessage(SmsMessage message) async {
-  var response = await http.post(
-      Uri.parse(
-          'https://react-http-548c4-default-rtdb.firebaseio.com/message.json'),
-      body: {
-        "id": 1,
-        "title": "${message.address}",
-        "body": "${message.body}",
-        "sender": "${message.date}",
-      },
-      headers: {
-        'Content-Type': 'application-json'
-      });
-  debugPrint(response.toString());
-  debugPrint("It was Called");
+  
+      var msg = {
+            "title": "${message.address}",
+            "body": "${message.body}",
+            "sender": "${message.date}",
+          };
+      var body = jsonEncode(msg);
+      var response = await http.post(
+          Uri.parse(
+              'https://expense-tracker-63c60-default-rtdb.firebaseio.com/message.json'),
+          body: body,
+          headers: {
+            "Content-Type": "application/json"
+          });
+      debugPrint(response.toString());
+      debugPrint("It was Called");
+      
 }
 
 void main() {
@@ -47,15 +52,31 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
-  // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
-    // Platform messages may fail, so we use a try/catch PlatformException.
-    // If the widget was removed from the tree while the asynchronous platform
-    // message was in flight, we want to discard the reply rather than calling
-    // setState to update our non-existent appearance.
-
     final bool? result = await telephony.requestPhoneAndSmsPermissions;
     txtMessage = await telephony.getInboxSms();
+    for (var message in txtMessage) {
+      _message = message.body ?? "No sms";
+      var msg = {
+            "title": "${message.address}",
+            "body": "${message.body}",
+            "sender": "${message.date}",
+          };
+      var body = jsonEncode(msg);
+      var response = await http.post(
+          Uri.parse(
+              'https://expense-tracker-63c60-default-rtdb.firebaseio.com/message.json'),
+          body: body,
+          headers: {
+            "Content-Type": "application/json"
+          });
+      var convert = json.decode(response.body);
+      debugPrint(convert['name']);
+      debugPrint("It was Called");
+      setState(() {
+        _message;
+      });
+    }
 
     if (result != null && result) {
       telephony.listenIncomingSms(
@@ -75,11 +96,8 @@ class _MyAppState extends State<MyApp> {
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Center (child: Text("Latest received SMS")),
-         (txtMessage.first).equals(messages.first)? const Text('No Data'): TextButton(
-            child: const Text('Hello'),
-            onPressed: onTextMessage(txtMessage.first),
-          )
+          const Center(child: Text("Latest received SMS")),
+          Text(_message),
         ],
       ),
     ));
@@ -88,15 +106,14 @@ class _MyAppState extends State<MyApp> {
   onTextMessage(SmsMessage message) async {
     var response = await http.post(
         Uri.parse(
-            'https://react-http-548c4-default-rtdb.firebaseio.com/message.json'),
+            'https://expense-tracker-63c60-default-rtdb.firebaseio.com/message.json'),
         body: {
-          "id": 1,
           "title": "${message.address}",
           "body": "${message.body}",
           "sender": "${message.date}",
         },
         headers: {
-          'Content-Type': 'application-json'
+          "Content-Type": "application/json"
         });
     debugPrint(response.toString());
     debugPrint("It was Called");
